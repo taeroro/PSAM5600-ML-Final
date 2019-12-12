@@ -1,3 +1,8 @@
 .App {
   text-align: center;
+  overflow: hidden;
+}
+
+.App * {
+  display: block;
 }
