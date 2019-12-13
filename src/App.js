@@ -24,7 +24,7 @@ function App() {
     for(let i = 0; i < positions.length; i ++) {
       // const filename = positions[i].filename.replace(/\//g, '_');
       const filename = positions[i].filename.replace('faces_gray/', '');
-      console.log(filename);
+      // console.log(filename);
       const name = filename.replace('.jpg', '');
 
       app.loader.add(name, "./faces_gray/" + filename)
@@ -41,14 +41,29 @@ function App() {
     })
 
     window.addEventListener('resize', resize);
-
     function resize() {
       viewport.resize(window.innerWidth,window.innerHeight,500,500);
-      console.log(viewport.screenWidth);
+      // console.log(viewport.screenWidth);
       app.view.width = window.innerWidth;
       app.view.height = window.innerHeight;
     }
 
+    // let clicked = 0;
+    // window.addEventListener('click', clickOutSide);
+    // function clickOutSide() {
+    //   console.log(overlay);
+    //   if (overlay === null) {
+    //     console.log("here");
+    //     viewport.plugins.resume('wheel');
+    //   }
+    //   if (clicked > 1) {
+    //     viewport.plugins.resume('wheel');
+    //     console.log("listener " + clicked);
+    //     clicked = 0;
+    //   }
+    //
+    //   if (clicked !== 0) clicked++;
+    // }
 
     // add the viewport to the stage
     app.stage.addChild(viewport);
@@ -96,12 +111,17 @@ function App() {
 
         //erase
         imageSprite.id = index;
-        imageSprite.fadeInTime = Math.random() * 200;
+        imageSprite.fadeInTime = Math.random() * 300;
 
         const name = key;
 
         imageSprite.on('click', () => {
           setOverlay(positionDict[name]);
+
+          // clicked = 0;
+          // viewport.plugins.pause('wheel');
+          // clicked++;
+          // console.log("sprite " + clicked);
         });
 
         imageSprite.on('mouseover', () => {
