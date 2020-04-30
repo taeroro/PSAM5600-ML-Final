@@ -6,7 +6,7 @@ import text_data from './text_data';
 function Overlay(props) {
   // const name = props.details.filename.split('/')[1];
   const url = "./" + props.details.filename;
-  const id = props.details.filename.replace('faces_gray/', '').replace('.jpg', '');
+  const id = props.details.filename.replace('resized_faces_gray/', '').replace('.jpg', '');
   const setOverlay = props.setOverlay;
 
   let name = '';
