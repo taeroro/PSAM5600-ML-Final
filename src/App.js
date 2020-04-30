@@ -4,14 +4,17 @@ import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 
 import Overlay from './Overlay';
-// import positions from './image_umap_position';
 import positions from './image_umap_position_neighbors';
 import './App.css';
 
 
 function App() {
   const [overlay, setOverlay] = useState(null);
+  const [loadingComplete, setLoadingComplete] = useState(false);
+  const [loadingProcess, setLoadingProcess] = useState(0);
   const canvas = useRef(null);
+
+  let loadingNum = 0;
 
   useEffect(() => {
     const app = new PIXI.Application({
@@ -207,20 +210,30 @@ function App() {
       }
     });
 
-    // initial animation
-    let time = 0
-    app.ticker.add((delta) => {
-      time++;
+    app.loader.onLoad.add(() => {
+      let progress = Math.trunc(loadingNum++ / positions.length * 100);
+      setLoadingProcess(progress)
+    });
 
-      sprites.forEach(i => {
-        if(time > i.fadeInTime && i.alpha < 1) {
-          i.alpha += .1;
+    app.loader.onComplete.add(() => {
+      setLoadingComplete(!loadingComplete);
 
-          // increment range 0 < alpha <= 0.5
-          // i.alpha += Math.random(0.5);
-        }
+      // initial animation
+      let time = 0
+      app.ticker.add((delta) => {
+        time++;
+
+        sprites.forEach(i => {
+          if(time > i.fadeInTime && i.alpha < 1) {
+            i.alpha += .1;
+
+            // increment range 0 < alpha <= 0.5
+            // i.alpha += Math.random(0.5);
+          }
+        })
       })
-    })
+    });
+
 
   }, [])
 
@@ -228,6 +241,14 @@ function App() {
 
   return (
     <div className="App">
+      {
+        !loadingComplete &&
+        <div className="loading-container">
+          <span>Loading...</span>
+          <span>{loadingProcess}</span>
+        </div>
+      }
+
       <canvas
         ref={canvas}
       />
