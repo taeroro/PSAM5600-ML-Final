@@ -13,11 +13,14 @@ function App() {
   const [overlay, setOverlay] = useState(null);
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [loadingProcess, setLoadingProcess] = useState(0);
+  const [initSc, setInitSc] = useState(true);
   const canvas = useRef(null);
+  const loadingScreen = useRef(null);
 
   let loadingNum = 0;
 
   useEffect(() => {
+
     const app = new PIXI.Application({
       width: window.innerWidth,
       height: window.innerHeight,
@@ -239,7 +242,7 @@ function App() {
                     checkLineArr[tempKey] = true;
                     app.ticker.add(moveLine, PIXI.UPDATE_PRIORITY.NORMAL);
                   }
-                  
+
                   // // line moving
                   // linesArr[tempKey].clear();
                   // linesArr[tempKey].lineStyle(10, 0xFFFFFF, 1);
@@ -314,37 +317,48 @@ function App() {
     });
 
     app.loader.onComplete.add(() => {
-      setLoadingComplete(!loadingComplete);
+      setTimeout(() => {
+        gsap.to(loadingScreen.current, {
+          duration: 0.5,
+          opacity: 0,
+          ease: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+          onComplete: () => {
+            setLoadingComplete(!loadingComplete);
 
-      // initial animation
-      let time = 0
+            // initial animation
+            let time = 0
 
-      let isGsapArr = [];
+            let isGsapArr = [];
 
-      app.ticker.add((delta) => {
-        time++;
+            app.ticker.add((delta) => {
+              time++;
 
-        sprites.forEach((i, index) => {
-          if (!isGsapArr[index]) {
-            isGsapArr[index] = true;
-            gsap.from(i, {
-              x: 0,
-              y: 0,
-              width: 0,
-              height: 0,
-              duration: randomNumber(2, 5),
-              ease: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+              sprites.forEach((i, index) => {
+                if (!isGsapArr[index]) {
+                  isGsapArr[index] = true;
+                  gsap.from(i, {
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0,
+                    duration: randomNumber(2, 5),
+                    ease: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+                  })
+                }
+
+                if (time > i.fadeInTime && i.alpha < 1) {
+                  i.alpha += .1;
+
+                  // increment range 0 < alpha <= 0.5
+                  // i.alpha += Math.random(0.5);
+                }
+              })
             })
           }
+        });
 
-          if (time > i.fadeInTime && i.alpha < 1) {
-            i.alpha += .1;
 
-            // increment range 0 < alpha <= 0.5
-            // i.alpha += Math.random(0.5);
-          }
-        })
-      })
+      }, 1000);
     });
 
 
@@ -355,12 +369,23 @@ function App() {
 	}
 
 
-
   return (
     <div className="App">
       {
+        initSc &&
+        <div className="init-container">
+          <h1>Faces of The Portraits</h1>
+          <p>Machine learning algorithm explores face similarity of the portraits</p>
+
+          <div className="start-bt" onClick={() => setInitSc(false)}>
+            <span>Start</span>
+          </div>
+        </div>
+      }
+
+      {
         !loadingComplete &&
-        <div className="loading-container">
+        <div className="loading-container" ref={loadingScreen}>
           <span>Loading...</span>
           <span>{loadingProcess}</span>
         </div>
