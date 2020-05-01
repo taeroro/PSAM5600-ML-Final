@@ -7,6 +7,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "gsap": "^3.2.6",
+    "lodash": "^4.17.15",
     "pixi-viewport": "^4.4.1",
     "pixi.js": "^5.2.0",
     "react": "^16.12.0",

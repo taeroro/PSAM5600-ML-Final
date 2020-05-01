@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Viewport } from 'pixi-viewport';
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
+import _ from 'lodash';
 
 import Overlay from './Overlay';
 import positions from './image_umap_position_neighbors';
@@ -127,6 +128,7 @@ function App() {
 
         // erase
         imageSprite.id = index;
+        imageSprite.key = key;
         imageSprite.fadeInTime = Math.random() * 300;
 
         const name = key;
@@ -140,13 +142,19 @@ function App() {
           // console.log("sprite " + clicked);
         });
 
+        let linesArr = [];
         let lineGraphics = new PIXI.Graphics();
-        viewport.addChild(lineGraphics);
         lineGraphics.lineStyle(10, 0xFFFFFF, 1);
         lineGraphics.alpha = 0;
 
+
+        // viewport.addChild(lineGraphics);
+
+
         let ogHeight = imageSprite.height;
         let ogWidth = imageSprite.width;
+
+        let tl = [];
 
         imageSprite.on('mouseover', () => {
           gsap.to(imageSprite, {
@@ -172,21 +180,57 @@ function App() {
           }
 
           // line graphics
-          // TODO
           lineGraphics.alpha = 1;
           lineGraphics.zIndex = -5;
 
           for (let point of scaledPos) {
             lineGraphics.moveTo(imageSprite.x, imageSprite.y)
             lineGraphics.lineTo(point[0], point[1]);
+
+            lineGraphics.endFill();
+            linesArr.push(lineGraphics);
+
+            viewport.addChild(lineGraphics);
           }
 
-          // graphics.alpha = 1;
-          // graphics.x = imageSprite.x;
-          // graphics.y = imageSprite.y;
+          const nearestKey = positionDict[key].nearest_key;
+
+          for (let tempKey in nearestKey) {
+            const tempK = _.findKey(sprites, ['key', nearestKey[tempKey]]);
+            const tempX = sprites[tempK].x;
+            const tempY = sprites[tempK].y;
+
+            if (tl[tempKey])
+              tl[tempKey].kill();
+
+            tl[tempKey] = gsap.timeline();
+
+            const move = () => {
+              let rX = randomNumber(tempX - 200, tempX + 200);
+              let rY = randomNumber(tempY - 200, tempY + 200);
+              let rTime = randomNumber(6, 10);
+
+
+              // linesArr[tempKey]
+
+              tl[tempKey].to(sprites[tempK], {
+                x: rX,
+                y: rY,
+                duration: rTime,
+                ease: "easeInOut",
+                onComplete: move
+              })
+            }
+
+            move();
+          }
         });
 
         imageSprite.on('mouseout', () => {
+          for (let i = 0; i < 5; i++) {
+            tl[i].kill();
+          }
+
           gsap.to(imageSprite, {
             height: ogHeight,
             width: ogWidth,
@@ -195,10 +239,22 @@ function App() {
             ease: "cubic-bezier(0.215, 0.61, 0.355, 1)",
           })
 
-          imageSprite.hover = false;
+          const nearestKey = positionDict[key].nearest_key;
 
+          for (let tempKey in nearestKey) {
+            const tempK = _.findKey(sprites, ['key', nearestKey[tempKey]]);
+            const tempClusterPos = positionDict[nearestKey[tempKey]].cluster_pos;
+
+            gsap.to(sprites[tempK], {
+              x: 12 * app.renderer.width * (tempClusterPos[0] * 2 - 1),
+              y: 12 * app.renderer.width * (tempClusterPos[1] * 2 - 1),
+              duration: 0.3,
+              ease: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+            })
+          }
+
+          imageSprite.hover = false;
           lineGraphics.alpha = 0;
-          // graphics.alpha = 0;
         });
 
 
@@ -206,7 +262,6 @@ function App() {
 
         sprites.push(imageSprite);
         index++;
-
       }
     });
 
@@ -220,11 +275,26 @@ function App() {
 
       // initial animation
       let time = 0
+
+      let isGsapArr = [];
+
       app.ticker.add((delta) => {
         time++;
 
-        sprites.forEach(i => {
-          if(time > i.fadeInTime && i.alpha < 1) {
+        sprites.forEach((i, index) => {
+          if (!isGsapArr[index]) {
+            isGsapArr[index] = true;
+            gsap.from(i, {
+              x: 0,
+              y: 0,
+              width: 0,
+              height: 0,
+              duration: randomNumber(2, 5),
+              ease: "cubic-bezier(0.215, 0.61, 0.355, 1)",
+            })
+          }
+
+          if (time > i.fadeInTime && i.alpha < 1) {
             i.alpha += .1;
 
             // increment range 0 < alpha <= 0.5
@@ -236,6 +306,10 @@ function App() {
 
 
   }, [])
+
+  function randomNumber(min, max) {
+		return Math.floor(Math.random() * (1 + max - min) + min);
+	}
 
 
 
