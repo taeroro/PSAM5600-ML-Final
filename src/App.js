@@ -184,13 +184,33 @@ function App() {
           lineGraphics.zIndex = -5;
 
           for (let point of scaledPos) {
-            lineGraphics.moveTo(imageSprite.x, imageSprite.y)
-            lineGraphics.lineTo(point[0], point[1]);
+            // lineGraphics.moveTo(imageSprite.x, imageSprite.y)
+            // lineGraphics.lineTo(point[0], point[1]);
 
-            lineGraphics.endFill();
-            linesArr.push(lineGraphics);
 
+            // lineGraphics.endFill();
             viewport.addChild(lineGraphics);
+
+            let p = 0; // percentage
+            const ogX = imageSprite.x;
+            const ogY = imageSprite.y;
+
+            const drawLine = () => {
+              if (p < 1.00)
+                p += 0.05;
+              else {
+                lineGraphics.endFill();
+                linesArr.push(lineGraphics);
+                app.ticker.remove(drawLine);
+              }
+
+              lineGraphics.moveTo(ogX, ogY);
+              lineGraphics.lineTo(ogX + (point[0] - ogX)*p, ogY + (point[1] - ogY)*p);
+            }
+
+            app.ticker.add(drawLine, PIXI.UPDATE_PRIORITY.NORMAL);
+
+            // viewport.addChild(lineGraphics);
           }
 
           const nearestKey = positionDict[key].nearest_key;
@@ -205,13 +225,32 @@ function App() {
 
             tl[tempKey] = gsap.timeline();
 
+
+            let checkLineArr = [];
+
             const move = () => {
-              let rX = randomNumber(tempX - 200, tempX + 200);
-              let rY = randomNumber(tempY - 200, tempY + 200);
+              let rX = randomNumber(tempX - 150, tempX + 150);
+              let rY = randomNumber(tempY - 150, tempY + 150);
               let rTime = randomNumber(6, 10);
 
+              const moveLine = () => {
+                if (linesArr[tempKey]) {
+                  if (!checkLineArr[tempKey]) {
+                    checkLineArr[tempKey] = true;
+                    app.ticker.add(moveLine, PIXI.UPDATE_PRIORITY.NORMAL);
+                  }
+                  
+                  // // line moving
+                  // linesArr[tempKey].clear();
+                  // linesArr[tempKey].lineStyle(10, 0xFFFFFF, 1);
+                  // linesArr[tempKey].alpha = 1;
+                  // linesArr[tempKey].moveTo(imageSprite.x, imageSprite.y);
+                  // linesArr[tempKey].lineTo(sprites[tempK].x, sprites[tempK].y);
+                  // linesArr[tempKey].endFill();
+                }
+              }
 
-              // linesArr[tempKey]
+              moveLine();
 
               tl[tempKey].to(sprites[tempK], {
                 x: rX,
@@ -229,6 +268,10 @@ function App() {
         imageSprite.on('mouseout', () => {
           for (let i = 0; i < 5; i++) {
             tl[i].kill();
+
+            if (linesArr[i]) {
+              linesArr[i].alpha = 0;
+            }
           }
 
           gsap.to(imageSprite, {
@@ -254,7 +297,7 @@ function App() {
           }
 
           imageSprite.hover = false;
-          lineGraphics.alpha = 0;
+          // lineGraphics.alpha = 0;
         });
 
 
