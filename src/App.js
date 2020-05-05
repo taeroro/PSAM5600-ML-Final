@@ -25,7 +25,9 @@ function App() {
       width: window.innerWidth,
       height: window.innerHeight,
       view: canvas.current,
-      antialias: true
+      antialias: true,
+      autoDensity: true,
+      resolution: 2,
     });
 
     let positionDict = {}
@@ -82,7 +84,7 @@ function App() {
       .wheel()
       .decelerate()
 
-    viewport.setZoom(.02, true);
+    viewport.setZoom(.0102, true);
     // viewport.moveCenter(2000, 0);
     viewport.sortableChildren = true;
 
@@ -115,7 +117,7 @@ function App() {
         imageSprite.zIndex = 0;
 
         // resize images
-        const max_dim = 300;
+        const max_dim = 600;
         let rs = Math.max(1, imageSprite.width/max_dim, imageSprite.height/max_dim);
         let newWidth = imageSprite.width/rs;
         let newHeight = imageSprite.height/rs;
